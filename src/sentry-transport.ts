@@ -14,6 +14,7 @@ export interface SentryTransportOpts extends Transports.TransportStreamOptions {
 
 export class SentryTransport extends Transport {
   readonly levelsMap: SentryLevelsMap;
+  globalTags: any;
 
   constructor(opts: SentryTransportOpts) {
     super(opts);
@@ -29,9 +30,8 @@ export class SentryTransport extends Transport {
 
       scope.setLevel(this.levelsMap[level]);
 
-      if (tags) {
-        scope.setTags(tags);
-      }
+      const allTags = { ...this.globalTags, ...tags}
+      scope.setTags(allTags);
 
       if (fingerprint) {
         scope.setFingerprint(Array.isArray(fingerprint) ? fingerprint : [fingerprint]);
@@ -65,6 +65,10 @@ export class SentryTransport extends Transport {
 
       next();
     });
+  }
+
+  setGlobalTags (tags: any) {
+    this.globalTags = tags
   }
 
   isSentryUser(user: any): user is Sentry.User {
